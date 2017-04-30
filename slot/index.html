@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes">
+
+    <title>Snabbdom'moji</title>
+    <style media="screen">
+      body {
+        text-align: center;
+      }
+
+      h1 {
+        text-transform: uppercase;
+
+        user-select: none;
+        touch-callout: none;
+        user-drag: none;
+      }
+    </style>
+  </head>
+  <body>
+
+    <h1>Slot example</h1>
+
+    <slot-app></slot-app>
+
+    <script src="./dist/index.js" charset="utf-8"></script>
+  </body>
+</html>
