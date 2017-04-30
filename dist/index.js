@@ -8,93 +8,6 @@ function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
 }
 
-var vnode_1 = createCommonjsModule(function (module, exports) {
-"use strict";
-function vnode(sel, data, children, text, elm) {
-    var key = data === undefined ? undefined : data.key;
-    return { sel: sel, data: data, children: children,
-        text: text, elm: elm, key: key };
-}
-exports.vnode = vnode;
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = vnode;
-
-});
-
-var array = Array.isArray;
-function primitive(s) {
-    return typeof s === 'string' || typeof s === 'number';
-}
-var primitive_1 = primitive;
-
-
-var is = {
-	array: array,
-	primitive: primitive_1
-};
-
-var h_1 = createCommonjsModule(function (module, exports) {
-"use strict";
-var vnode_1$$1 = vnode_1;
-var is$$1 = is;
-function addNS(data, children, sel) {
-    data.ns = 'http://www.w3.org/2000/svg';
-    if (sel !== 'foreignObject' && children !== undefined) {
-        for (var i = 0; i < children.length; ++i) {
-            var childData = children[i].data;
-            if (childData !== undefined) {
-                addNS(childData, children[i].children, children[i].sel);
-            }
-        }
-    }
-}
-function h(sel, b, c) {
-    var data = {}, children, text, i;
-    if (c !== undefined) {
-        data = b;
-        if (is$$1.array(c)) {
-            children = c;
-        }
-        else if (is$$1.primitive(c)) {
-            text = c;
-        }
-        else if (c && c.sel) {
-            children = [c];
-        }
-    }
-    else if (b !== undefined) {
-        if (is$$1.array(b)) {
-            children = b;
-        }
-        else if (is$$1.primitive(b)) {
-            text = b;
-        }
-        else if (b && b.sel) {
-            children = [b];
-        }
-        else {
-            data = b;
-        }
-    }
-    if (is$$1.array(children)) {
-        for (i = 0; i < children.length; ++i) {
-            if (is$$1.primitive(children[i]))
-                { children[i] = vnode_1$$1.vnode(undefined, undefined, undefined, children[i]); }
-        }
-    }
-    if (sel[0] === 's' && sel[1] === 'v' && sel[2] === 'g' &&
-        (sel.length === 3 || sel[3] === '.' || sel[3] === '#')) {
-        addNS(data, children, sel);
-    }
-    return vnode_1$$1.vnode(sel, data, children, text, undefined);
-}
-exports.h = h;
-
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.default = h;
-
-});
-
 var hasOwn = Object.prototype.hasOwnProperty;
 var toStr = Object.prototype.toString;
 
@@ -126,7 +39,7 @@ var isPlainObject = function isPlainObject(obj) {
 	return typeof key === 'undefined' || hasOwn.call(obj, key);
 };
 
-var index$1 = function extend() {
+var index = function extend() {
 	var arguments$1 = arguments;
 
 	var options, name, src, copy, copyIsArray, clone,
@@ -181,77 +94,226 @@ var index$1 = function extend() {
 	return target;
 };
 
-var index_1$1 = createCommonjsModule(function (module, exports) {
+var index_1 = createCommonjsModule(function (module, exports) {
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
-var h = _interopDefault(h_1);
-var extend = _interopDefault(index$1);
+var _extend = _interopDefault(index);
 
-var sanitizeProps = function (props) {
+var undefinedv = function (v) { return v === undefined; };
 
-  props = props === null ? {} : props;
+var number = function (v) { return typeof v === 'number'; };
 
-  Object.keys(props).map(function (prop) {
-    var keysRiver = prop.split('-').reverse();
+var string = function (v) { return typeof v === 'string'; };
 
-    if(keysRiver.length > 1) {
-      var newObject = keysRiver.reduce(
-        function (object, key) { return (( obj = {}, obj[key] = object, obj ))
-          var obj; },
-        props[prop]
-      );
-      extend(true, props, newObject);
+var text = function (v) { return string(v) || number(v); };
 
-      delete props[prop];
-    }
-    else if (!(['class', 'props', 'attrs', 'style', 'on', 'hook', 'key'].indexOf(prop) > -1)) {
-      extend(true, props, {props: ( obj = {}, obj[prop] = props[prop], obj ) });
+var array = function (v) { return Array.isArray(v); };
+
+var object = function (v) { return v === Object(v); };
+
+var fun = function (v) { return typeof v === 'function'; };
+
+var vnode = function (v) { return object(v) &&
+  ['sel', 'data', 'children', 'text', 'elm', 'key'].every(
+    function (k) { return k in v; }
+  ); };
+
+var svg = function (v) { return [
+  'svg', 'circle', 'ellipse', 'line', 'polygon',
+  'polyline', 'rect', 'g', 'path', 'text'
+].includes(v.sel); };
+
+// TODO: stop using extend here
+var extend = function () {
+  var arguments$1 = arguments;
+
+  var objs = [], len = arguments.length;
+  while ( len-- ) { objs[ len ] = arguments$1[ len ]; }
+
+  return _extend.apply(void 0, [ true ].concat( objs ));
+};
+
+var assign = function () {
+  var arguments$1 = arguments;
+
+  var objs = [], len = arguments.length;
+  while ( len-- ) { objs[ len ] = arguments$1[ len ]; }
+
+  return _extend.apply(void 0, [ false ].concat( objs ));
+};
+
+var flatten = function (arr) { return arr.reduce(
+  function (acc, curr) { return !array(curr) ? acc.concat( [curr]) :
+    acc.concat( flatten(curr)); },
+  []
+); };
+
+var mapObject = function (obj, fn) { return Object.entries(obj).map(
+  function (ref) {
+    var key = ref[0];
+    var val = ref[1];
+
+    return fn([key, val]);
+  }
+).reduce(
+  function (acc, curr) { return extend(acc, curr); },
+  {}
+); };
+
+var deepifyKeys = function (obj) { return mapObject(obj,
+  function (ref) {
+    var key = ref[0];
+    var val = ref[1];
+
+    return key.split('-').reverse().reduce(
+    function (object$$1, key) { return (( obj = {}, obj[key] = object$$1, obj ))
+      var obj; },
+    val
+  );
+  }
+); };
+
+var flatifyKeys = function (obj) { return mapObject(obj,
+  function (ref) {
+    var mod = ref[0];
+    var data = ref[1];
+
+    return !object(data) ? (( obj = {}, obj[mod] = data, obj )) : mapObject(
+    flatifyKeys(data),
+    function (ref) {
+      var key = ref[0];
+      var val = ref[1];
+
+      return (( obj = {}, obj[(mod + "-" + key)] = val, obj ))
       var obj;
-
-      delete props[prop];
     }
+  )
+    var obj;
+  }
+); };
 
-  });
+var omit = function (key, obj) { return mapObject(obj,
+  function (ref) {
+    var mod = ref[0];
+    var data = ref[1];
 
-  return props
+    return mod !== key ? (( obj = {}, obj[mod] = data, obj )) : {}
+    var obj;
+  }
+); };
 
-};
+// const fnName = (...params) => guard ? default : ...
 
-var sanitizeChilds = function (children) {
+var createTextElement = function (text$$1) { return !text(text$$1) ? undefined : {
+  text: text$$1,
+  sel: undefined,
+  data: undefined,
+  children: undefined,
+  elm: undefined,
+  key: undefined
+}; };
 
-  return children.length === 1 && typeof children[0] === 'string' ?
-    children[0] : children
+var considerSvg = function (vnode$$1) { return !svg(vnode$$1) ? vnode$$1 :
+  assign(vnode$$1,
+    { data: omit('props', extend(vnode$$1.data,
+      { ns: 'http://www.w3.org/2000/svg', attrs: vnode$$1.data.props }
+    )) },
+    { children: undefinedv(vnode$$1.children) ? undefined :
+      vnode$$1.children.map(function (child) { return considerSvg(child); })
+    }
+  ); };
 
-};
+var considerDataAria = function (data) { return mapObject(data,
+  function (ref) {
+    var mod = ref[0];
+    var data = ref[1];
 
-var createElement = function (type, props) {
+    return !['data', 'aria'].includes(mod) ? ( obj = {}, obj[mod] = data, obj ) :
+    flatifyKeys(( obj$1 = {}, obj$1[mod] = data, obj$1 ))
+    var obj;
+    var obj$1;
+  }
+); };
+
+var considerProps = function (data) { return mapObject(data,
+  function (ref) {
+    var key = ref[0];
+    var val = ref[1];
+
+    return object(val) ? ( obj = {}, obj[key] = val, obj ) :
+    { props: ( obj$1 = {}, obj$1[key] = val, obj$1 ) }
+    var obj;
+    var obj$1;
+  }
+); };
+
+var sanitizeData = function (data) { return !object(data) ? {} :
+  considerProps(considerDataAria(deepifyKeys(data))); };
+
+var sanitizeText = function (children) { return !array(children) || children.length > 1 || !text(children[0]) ? undefined :
+  children[0]; };
+
+var sanitizeChildren = function (children) { return !array(children) || text(sanitizeText(children)) ? undefined :
+  flatten(children).map(
+    function (child) { return vnode(child) ? child :
+      createTextElement(child); }
+  ); };
+
+var createElement = function (sel, data) {
   var arguments$1 = arguments;
 
   var children = [], len = arguments.length - 2;
   while ( len-- > 0 ) { children[ len ] = arguments$1[ len + 2 ]; }
 
-
-
-  return (typeof type === 'function') ?
-    type(props, children) :
-    h(type, sanitizeProps(props), sanitizeChilds(children))
-
+  if ( data === void 0 ) { data = {}; }
+  return fun(sel) ? sel(data, children) : considerSvg({
+  sel: sel,
+  data: sanitizeData(data),
+  children: sanitizeChildren(children),
+  text: sanitizeText(children),
+  elm: undefined,
+  key: undefined
+});
 };
 
-
-var index = {
+var index$$1 = {
   createElement: createElement
 };
 
 exports.createElement = createElement;
-exports['default'] = index;
+exports['default'] = index$$1;
 });
 
-var index_2 = index_1$1.createElement;
+var Snabbdom = unwrapExports(index_1);
+
+var vnode_1$1 = createCommonjsModule(function (module, exports) {
+"use strict";
+function vnode(sel, data, children, text, elm) {
+    var key = data === undefined ? undefined : data.key;
+    return { sel: sel, data: data, children: children,
+        text: text, elm: elm, key: key };
+}
+exports.vnode = vnode;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = vnode;
+
+});
+
+var array = Array.isArray;
+function primitive(s) {
+    return typeof s === 'string' || typeof s === 'number';
+}
+var primitive_1 = primitive;
+
+
+var is$1 = {
+	array: array,
+	primitive: primitive_1
+};
 
 var htmldomapi = createCommonjsModule(function (module, exports) {
 "use strict";
@@ -322,9 +384,71 @@ exports.default = exports.htmlDomApi;
 
 });
 
+var h_1$1 = createCommonjsModule(function (module, exports) {
+"use strict";
+var vnode_1 = vnode_1$1;
+var is = is$1;
+function addNS(data, children, sel) {
+    data.ns = 'http://www.w3.org/2000/svg';
+    if (sel !== 'foreignObject' && children !== undefined) {
+        for (var i = 0; i < children.length; ++i) {
+            var childData = children[i].data;
+            if (childData !== undefined) {
+                addNS(childData, children[i].children, children[i].sel);
+            }
+        }
+    }
+}
+function h(sel, b, c) {
+    var data = {}, children, text, i;
+    if (c !== undefined) {
+        data = b;
+        if (is.array(c)) {
+            children = c;
+        }
+        else if (is.primitive(c)) {
+            text = c;
+        }
+        else if (c && c.sel) {
+            children = [c];
+        }
+    }
+    else if (b !== undefined) {
+        if (is.array(b)) {
+            children = b;
+        }
+        else if (is.primitive(b)) {
+            text = b;
+        }
+        else if (b && b.sel) {
+            children = [b];
+        }
+        else {
+            data = b;
+        }
+    }
+    if (is.array(children)) {
+        for (i = 0; i < children.length; ++i) {
+            if (is.primitive(children[i]))
+                { children[i] = vnode_1.vnode(undefined, undefined, undefined, children[i]); }
+        }
+    }
+    if (sel[0] === 's' && sel[1] === 'v' && sel[2] === 'g' &&
+        (sel.length === 3 || sel[3] === '.' || sel[3] === '#')) {
+        addNS(data, children, sel);
+    }
+    return vnode_1.vnode(sel, data, children, text, undefined);
+}
+exports.h = h;
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.default = h;
+
+});
+
 var thunk$1 = createCommonjsModule(function (module, exports) {
 "use strict";
-var h_1$$1 = h_1;
+var h_1 = h_1$1;
 function copyToThunk(vnode, thunk) {
     thunk.elm = vnode.elm;
     vnode.data.fn = thunk.data.fn;
@@ -359,7 +483,7 @@ exports.thunk = function thunk(sel, key, fn, args) {
         fn = key;
         key = undefined;
     }
-    return h_1$$1.h(sel, {
+    return h_1.h(sel, {
         key: key,
         hook: { init: init, prepatch: prepatch },
         fn: fn,
@@ -371,12 +495,12 @@ exports.default = exports.thunk;
 
 });
 
-var vnode_1$1 = vnode_1;
-var is$2 = is;
+var vnode_1 = vnode_1$1;
+var is = is$1;
 var htmldomapi_1 = htmldomapi;
 function isUndef(s) { return s === undefined; }
 function isDef(s) { return s !== undefined; }
-var emptyNode = vnode_1$1.default('', {}, [], undefined, undefined);
+var emptyNode = vnode_1.default('', {}, [], undefined, undefined);
 function sameVnode(vnode1, vnode2) {
     return vnode1.key === vnode2.key && vnode1.sel === vnode2.sel;
 }
@@ -396,8 +520,8 @@ function createKeyToOldIdx(children, beginIdx, endIdx) {
     return map;
 }
 var hooks = ['create', 'update', 'remove', 'destroy', 'pre', 'post'];
-var h_1$1 = h_1;
-var h$1 = h_1$1.h;
+var h_1 = h_1$1;
+var h = h_1.h;
 var thunk_1 = thunk$1;
 var thunk = thunk_1.thunk;
 function init(modules, domApi) {
@@ -415,7 +539,7 @@ function init(modules, domApi) {
     function emptyNodeAt(elm) {
         var id = elm.id ? '#' + elm.id : '';
         var c = elm.className ? '.' + elm.className.split(' ').join('.') : '';
-        return vnode_1$1.default(api.tagName(elm).toLowerCase() + id + c, {}, [], undefined, elm);
+        return vnode_1.default(api.tagName(elm).toLowerCase() + id + c, {}, [], undefined, elm);
     }
     function createRmCb(childElm, listeners) {
         return function rmCb() {
@@ -453,7 +577,7 @@ function init(modules, domApi) {
                 { elm.id = sel.slice(hash + 1, dot); }
             if (dotIdx > 0)
                 { elm.className = sel.slice(dot + 1).replace(/\./g, ' '); }
-            if (is$2.array(children)) {
+            if (is.array(children)) {
                 for (i = 0; i < children.length; ++i) {
                     var ch = children[i];
                     if (ch != null) {
@@ -461,7 +585,7 @@ function init(modules, domApi) {
                     }
                 }
             }
-            else if (is$2.primitive(vnode.text)) {
+            else if (is.primitive(vnode.text)) {
                 api.appendChild(elm, api.createTextNode(vnode.text));
             }
             for (i = 0; i < cbs.create.length; ++i)
@@ -678,7 +802,7 @@ var init_1 = init;
 
 
 var snabbdom = {
-	h: h$1,
+	h: h,
 	thunk: thunk,
 	init: init_1
 };
@@ -993,52 +1117,57 @@ var moduleEvent = unwrapExports(eventlisteners);
 
 // vdom initializer which export the patch function
 var vdom = function (pnode) {
-
   var patch = snabbdom.init([moduleClass, moduleProps, moduleAttrs, moduleStyle, moduleEvent]);
   pnode = pnode.appendChild(document.createElement('div'));
 
   return function (vnode) {
-
     vnode = typeof vnode === 'function' ? vnode() : vnode;
     pnode = patch(pnode, vnode);
-
   }
-
 };
 
 var patch = vdom(document.querySelector('svg-app'));
 
-var Smiley = function () { return index_2( 'svg', { 'attrs-xmlns': "http://www.w3.org/2000/svg", 'attrs-viewBox': "0 0 64 64", 'attrs-enable-background': "new 0 0 64 64" },
-    index_2( 'circle', { 'attrs-cx': "32", 'attrs-cy': "32", 'attrs-r': "30", 'attrs-fill': "#ffdd67" }),
-    index_2( Eyes, null ),
-    index_2( Mouth, null )
+var Smiley = function () { return Snabbdom.createElement( 'svg', { viewBox: "0 0 64 64" },
+    Snabbdom.createElement( 'circle', { cx: "32", cy: "32", r: "30", fill: "#ffdd67" }),
+    Snabbdom.createElement( Eyes, null ),
+    Snabbdom.createElement( Mouth, null )
   ); };
 
-var Eyes = function () { return index_2( 'g', { 'attrs-fill': "#664e27" },
-    index_2( LeftEye, null ),
-    index_2( RightEye, null )
+var Eyes = function () { return Snabbdom.createElement( 'g', { fill: "#664e27" },
+    Snabbdom.createElement( LeftEye, null ),
+    Snabbdom.createElement( RightEye, null )
   ); };
 
 var leftScrewed = false;
 
 var LeftEye = function () { return leftScrewed ?
-  index_2( 'path', {
-    'attrs-d': "m12.3 19.4c-.6.3-.3 1 .2 1.1 2.7.4 5.5.9 8.3 2.4-4 .7-7.2 2.7-9 4.8-.4.5.1 1.1.5 1 4.8-1.7 9.7-2.7 15.8-2 .5 0 .9-.2.8-.7-1.6-7.3-10.9-10-16.6-6.6", 'style-cursor': "pointer", 'on-click': function () { leftScrewed = false ; patch(Smiley()); } }) :
-  index_2( 'circle', {
-    'attrs-cx': "20.5", 'attrs-cy': "23", 'attrs-r': "5", 'style-cursor': "pointer", 'on-click': function () { leftScrewed = true ; patch(Smiley()); } }); };
+  Snabbdom.createElement( 'path', {
+    d: "m12.3 19.4c-.6.3-.3 1 .2 1.1 2.7.4 5.5.9 8.3 2.4-4 .7-7.2 2.7-9 4.8-.4.5.1 1.1.5 1 4.8-1.7 9.7-2.7 15.8-2 .5 0 .9-.2.8-.7-1.6-7.3-10.9-10-16.6-6.6", 'style-cursor': "pointer", 'on-click': function () {
+      leftScrewed = false; patch(Smiley());
+    } }) :
+  Snabbdom.createElement( 'circle', {
+    cx: "20.5", cy: "23", r: "5", 'style-cursor': "pointer", 'on-click': function () {
+      leftScrewed = true; patch(Smiley());
+    } }); };
 
 var rightScrewed = true;
 
 var RightEye = function () { return rightScrewed ?
-  index_2( 'path', {
-    'attrs-d': "m51.7 19.4c.6.3.3 1-.2 1.1-2.7.4-5.5.9-8.3 2.4 4 .7 7.2 2.7 9 4.8.4.5-.1 1.1-.5 1-4.8-1.7-9.7-2.7-15.8-2-.5 0-.9-.2-.8-.7 1.6-7.3 10.9-10 16.6-6.6", 'style-cursor': "pointer", 'on-click': function () { rightScrewed = false ; patch(Smiley()); } }) :
-  index_2( 'circle', {
-    'attrs-cx': "43.5", 'attrs-cy': "23", 'attrs-r': "5", 'style-cursor': "pointer", 'on-click': function () { rightScrewed = true ; patch(Smiley()); } }); };
+  Snabbdom.createElement( 'path', {
+    d: "m51.7 19.4c.6.3.3 1-.2 1.1-2.7.4-5.5.9-8.3 2.4 4 .7 7.2 2.7 9 4.8.4.5-.1 1.1-.5 1-4.8-1.7-9.7-2.7-15.8-2-.5 0-.9-.2-.8-.7 1.6-7.3 10.9-10 16.6-6.6", 'style-cursor': "pointer", 'on-click': function () {
+      rightScrewed = false; patch(Smiley());
+    } }) :
+  Snabbdom.createElement( 'circle', {
+    cx: "43.5", cy: "23", r: "5", 'style-cursor': "pointer", 'on-click': function () {
+      rightScrewed = true; patch(Smiley());
+    } }); };
 
-var Mouth = function () { return index_2( 'g', null,
-    index_2( 'path', { 'attrs-d': "m49.7 34.4c-.4-.5-1.1-.4-1.9-.4-15.8 0-15.8 0-31.6 0-.8 0-1.5-.1-1.9.4-3.9 5 .7 19.6 17.7 19.6 17 0 21.6-14.6 17.7-19.6", 'attrs-fill': "#664e27" }),
-    index_2( 'path', { 'attrs-d': "m33.8 41.7c-.6 0-1.5.5-1.1 2 .2.7 1.2 1.6 1.2 2.8 0 2.4-3.8 2.4-3.8 0 0-1.2 1-2 1.2-2.8.3-1.4-.6-2-1.1-2-1.6 0-4.1 1.7-4.1 4.6 0 3.2 2.7 5.8 6 5.8s6-2.6 6-5.8c-.1-2.8-2.7-4.5-4.3-4.6", 'attrs-fill': "#4c3526" }),
-    index_2( 'path', { 'attrs-d': "m24.3 50.7c2.2 1 4.8 1.5 7.7 1.5s5.5-.6 7.7-1.5c-2.1-1.1-4.7-1.7-7.7-1.7s-5.6.6-7.7 1.7", 'attrs-fill': "#ff717f" }),
-    index_2( 'path', { 'attrs-d': "m47 36c-15 0-15 0-29.9 0-2.1 0-2.1 4-.1 4 10.4 0 19.6 0 30 0 2 0 2-4 0-4", 'attrs-fill': "#fff" }), " */" ); };
+var Mouth = function () { return Snabbdom.createElement( 'g', { props: {} },
+    Snabbdom.createElement( 'path', { d: "m49.7 34.4c-.4-.5-1.1-.4-1.9-.4-15.8 0-15.8 0-31.6 0-.8 0-1.5-.1-1.9.4-3.9 5 .7 19.6 17.7 19.6 17 0 21.6-14.6 17.7-19.6", fill: "#664e27" }),
+    Snabbdom.createElement( 'path', { d: "m33.8 41.7c-.6 0-1.5.5-1.1 2 .2.7 1.2 1.6 1.2 2.8 0 2.4-3.8 2.4-3.8 0 0-1.2 1-2 1.2-2.8.3-1.4-.6-2-1.1-2-1.6 0-4.1 1.7-4.1 4.6 0 3.2 2.7 5.8 6 5.8s6-2.6 6-5.8c-.1-2.8-2.7-4.5-4.3-4.6", fill: "#4c3526" }),
+    Snabbdom.createElement( 'path', { d: "m24.3 50.7c2.2 1 4.8 1.5 7.7 1.5s5.5-.6 7.7-1.5c-2.1-1.1-4.7-1.7-7.7-1.7s-5.6.6-7.7 1.7", fill: "#ff717f" }),
+    Snabbdom.createElement( 'path', { d: "m47 36c-15 0-15 0-29.9 0-2.1 0-2.1 4-.1 4 10.4 0 19.6 0 30 0 2 0 2-4 0-4", fill: "#fff" })
+  ); };
 
 patch(Smiley());
