@@ -9,7 +9,7 @@ export default {
 
   plugins: [
     buble({
-      jsx: 'createElement'
+      jsx: 'Snabbdom.createElement'
     }),
     resolve(),
     common()

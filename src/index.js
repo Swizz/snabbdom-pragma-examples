@@ -1,4 +1,4 @@
-import { createElement } from 'snabbdom-pragma'
+import Snabbdom from 'snabbdom-pragma'
 import { vdom } from './vdom'
 
 const patch = vdom(document.querySelector('svg-app'))
