@@ -1126,48 +1126,8 @@ var vdom = function (pnode) {
   }
 };
 
-var patch = vdom(document.querySelector('svg-app'));
+var patch = vdom(document.querySelector('example-app'));
 
-var Smiley = function () { return Snabbdom.createElement( 'svg', { viewBox: "0 0 64 64" },
-    Snabbdom.createElement( 'circle', { cx: "32", cy: "32", r: "30", fill: "#ffdd67" }),
-    Snabbdom.createElement( Eyes, null ),
-    Snabbdom.createElement( Mouth, null )
-  ); };
+var Main = function () { return Snabbdom.createElement( 'div', null, "Hello World" ); };
 
-var Eyes = function () { return Snabbdom.createElement( 'g', { fill: "#664e27" },
-    Snabbdom.createElement( LeftEye, null ),
-    Snabbdom.createElement( RightEye, null )
-  ); };
-
-var leftScrewed = false;
-
-var LeftEye = function () { return leftScrewed ?
-  Snabbdom.createElement( 'path', {
-    d: "m12.3 19.4c-.6.3-.3 1 .2 1.1 2.7.4 5.5.9 8.3 2.4-4 .7-7.2 2.7-9 4.8-.4.5.1 1.1.5 1 4.8-1.7 9.7-2.7 15.8-2 .5 0 .9-.2.8-.7-1.6-7.3-10.9-10-16.6-6.6", 'style-cursor': "pointer", 'on-click': function () {
-      leftScrewed = false; patch(Smiley());
-    } }) :
-  Snabbdom.createElement( 'circle', {
-    cx: "20.5", cy: "23", r: "5", 'style-cursor': "pointer", 'on-click': function () {
-      leftScrewed = true; patch(Smiley());
-    } }); };
-
-var rightScrewed = true;
-
-var RightEye = function () { return rightScrewed ?
-  Snabbdom.createElement( 'path', {
-    d: "m51.7 19.4c.6.3.3 1-.2 1.1-2.7.4-5.5.9-8.3 2.4 4 .7 7.2 2.7 9 4.8.4.5-.1 1.1-.5 1-4.8-1.7-9.7-2.7-15.8-2-.5 0-.9-.2-.8-.7 1.6-7.3 10.9-10 16.6-6.6", 'style-cursor': "pointer", 'on-click': function () {
-      rightScrewed = false; patch(Smiley());
-    } }) :
-  Snabbdom.createElement( 'circle', {
-    cx: "43.5", cy: "23", r: "5", 'style-cursor': "pointer", 'on-click': function () {
-      rightScrewed = true; patch(Smiley());
-    } }); };
-
-var Mouth = function () { return Snabbdom.createElement( 'g', { props: {} },
-    Snabbdom.createElement( 'path', { d: "m49.7 34.4c-.4-.5-1.1-.4-1.9-.4-15.8 0-15.8 0-31.6 0-.8 0-1.5-.1-1.9.4-3.9 5 .7 19.6 17.7 19.6 17 0 21.6-14.6 17.7-19.6", fill: "#664e27" }),
-    Snabbdom.createElement( 'path', { d: "m33.8 41.7c-.6 0-1.5.5-1.1 2 .2.7 1.2 1.6 1.2 2.8 0 2.4-3.8 2.4-3.8 0 0-1.2 1-2 1.2-2.8.3-1.4-.6-2-1.1-2-1.6 0-4.1 1.7-4.1 4.6 0 3.2 2.7 5.8 6 5.8s6-2.6 6-5.8c-.1-2.8-2.7-4.5-4.3-4.6", fill: "#4c3526" }),
-    Snabbdom.createElement( 'path', { d: "m24.3 50.7c2.2 1 4.8 1.5 7.7 1.5s5.5-.6 7.7-1.5c-2.1-1.1-4.7-1.7-7.7-1.7s-5.6.6-7.7 1.7", fill: "#ff717f" }),
-    Snabbdom.createElement( 'path', { d: "m47 36c-15 0-15 0-29.9 0-2.1 0-2.1 4-.1 4 10.4 0 19.6 0 30 0 2 0 2-4 0-4", fill: "#fff" })
-  ); };
-
-patch(Smiley());
+patch(Main());
