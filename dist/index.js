@@ -1126,8 +1126,34 @@ var vdom = function (pnode) {
   }
 };
 
-var patch = vdom(document.querySelector('example-app'));
+var patch = vdom(document.querySelector('slot-app'));
 
-var Main = function () { return Snabbdom.createElement( 'div', null, "Hello World" ); };
+var Main = function () { return Snabbdom.createElement( List, { name: "Simpson family characters :" },
+    Snabbdom.createElement( Element, { firstname: "Homer", lastname: "Simpson" }),
+    Snabbdom.createElement( Element, { firstname: "Marge", lastname: "Simpson" }),
+    Snabbdom.createElement( Element, { firstname: "Bart", lastname: "Simpson" }),
+    Snabbdom.createElement( Element, { firstname: "Lisa", lastname: "Simpson" }),
+    Snabbdom.createElement( Element, { firstname: "Maggie", lastname: "Simpson" })
+  ); };
+
+var List = function (ref, children) {
+    var name = ref.name;
+
+    return Snabbdom.createElement( 'div', null,
+    Snabbdom.createElement( 'h3', null, name ),
+    Snabbdom.createElement( 'ul', null,
+      children
+    )
+  );
+};
+
+var Element = function (ref) {
+    var firstname = ref.firstname;
+    var lastname = ref.lastname;
+
+    return Snabbdom.createElement( 'li', null,
+    firstname, "   ", Snabbdom.createElement( 'b', null, lastname )
+  );
+};
 
 patch(Main());
